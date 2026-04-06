@@ -1,0 +1,108 @@
+/* General Setup */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Courier New', Courier, monospace; /* Monospace for a tech feel */
+    background-color: #0b0e14;
+    color: #e0e0e0;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Header */
+.main-header {
+    text-align: left;
+    padding: 20px;
+    border-left: 5px solid #00ffcc;
+    background: #161b22;
+    margin-bottom: 20px;
+}
+
+.status-tag {
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.active {
+    color: #00ffcc;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Cards */
+.data-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.card {
+    background: #161b22;
+    padding: 20px;
+    border-radius: 4px;
+    border: 1px solid #30363d;
+}
+
+.card h2 {
+    color: #00ffcc;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+/* Telemetry List */
+.stats-list {
+    list-style: none;
+}
+
+.stats-list li {
+    padding: 5px 0;
+    border-bottom: 1px solid #30363d;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #30363d;
+}
+
+th {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.done { color: #00ffcc; }
+.pending { color: #ffcc00; }
+.waiting { color: #666; }
+
+/* Footer */
+.main-footer {
+    text-align: center;
+    margin-top: 40px;
+    padding-bottom: 40px;
+}
+
+.main-footer a {
+    color: #00ffcc;
+    text-decoration: none;
+}
+
+.main-footer a:hover {
+    text-decoration: underline;
+}
