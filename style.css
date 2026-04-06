@@ -1,12 +1,13 @@
-/* General Setup */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
-
+h1 {
+    text-align:center;
+}
 body {
-    font-family: 'Courier New', Courier, monospace; /* Monospace for a tech feel */
+    font-family: 'Courier New', Courier;
     background-color: #0b0e14;
     color: #e0e0e0;
     line-height: 1.6;
@@ -18,7 +19,6 @@ body {
     margin: 0 auto;
 }
 
-/* Header */
 .main-header {
     text-align: left;
     padding: 20px;
@@ -30,6 +30,7 @@ body {
 .status-tag {
     font-size: 0.9rem;
     color: #888;
+    text-align:center;
 }
 
 .active {
@@ -59,7 +60,6 @@ body {
     text-transform: uppercase;
 }
 
-/* Telemetry List */
 .stats-list {
     list-style: none;
 }
@@ -69,7 +69,6 @@ body {
     border-bottom: 1px solid #30363d;
 }
 
-/* Table Styling */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -91,7 +90,6 @@ th {
 .pending { color: #ffcc00; }
 .waiting { color: #666; }
 
-/* Footer */
 .main-footer {
     text-align: center;
     margin-top: 40px;
