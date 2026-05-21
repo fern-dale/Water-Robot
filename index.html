@@ -26,7 +26,7 @@
     <svg id="map-svg" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
   <div class="sidebar">
-    <div id="warn-banner">⚠ Low battery(returning to dock!!!)</div>
+    <div id="warn-banner">⚠ Low battery — returning to dock</div>
     <div class="card">
       <div class="card-label">Water Temperature</div>
       <div class="card-value" id="temp-val">--</div>
@@ -35,7 +35,7 @@
     <div class="card">
       <div class="card-label">Battery</div>
       <div class="card-value" id="batt-val">--</div>
-      <div class="card-unit">Volts</div>
+      <div class="card-unit">volts</div>
       <div class="batt-bar-bg"><div id="batt-bar"></div></div>
     </div>
     <div class="card" style="flex:1; overflow-y:auto;">
@@ -53,11 +53,11 @@ var SHEET_URL = `https://script.google.com/macros/s/${SCRIPT_ID}/exec?action=rea
 var BATT_MAX    = 13.2;
 var BATT_MIN    = 10.5;
 var BATT_RETURN = 10.8;
-
 var GEO_TL = [39.950792, -75.547125];
-var GEO_TR = [39.954372, -75.540706];
-var GEO_BR = [39.952569, -75.539439];
-var GEO_BL = [39.948800, -75.545314];
+var GEO_TR = [39.954544, -75.541422];
+var GEO_BR = [39.952503, -75.539222];
+var GEO_BL = [39.948725, -75.544747];
+
 var PX_TL = [0,   0  ];
 var PX_TR = [100, 0  ];
 var PX_BR = [100, 100];
@@ -128,6 +128,7 @@ function renderMap(activeWP) {
     line.setAttribute("stroke-dasharray","4,4");
     svg.appendChild(line);
   }
+
   WAYPOINTS.forEach((wp, i) => {
     var {x, y} = latLngToXY(wp.lat, wp.lng);
     let color = i === 0 ? "#f59e0b" : i < activeWP ? "#22c55e" : i === activeWP ? "#3b82f6" : "#cbd5e1";
