@@ -1,67 +1,184 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Robot</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Water Robot</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
-<body>
-
-    <main class="container">
-        <header class="main-header">
-            <h1> Lake v1.0</h1>
-            <p class="status-tag">System Status: <span class="active">ON</span></p>
-        </header>
-
-        <article class="data-grid">
-            <section class="card">
-                <h2>Overview</h2>
-                <p>This autonomous robot is designed to go to specific GPS coordinates across the lake to monitor water quality.</p>
-            </section>
-            
-            <section class="card">
-                <h2>Real-Time Stats</h2>
-                <ul class="stats-list">
-                    <li><strong>Battery:</strong> 88%</li>
-                    <li><strong>Water Temp:</strong> 18°C</li>
-                </ul>
-            </section>
-            
-            <section class="card">
-                <h2>Mission Waypoints</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Point ID</th>
-                            <th>Coordinates</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Point 01</td>
-                            <td>40.7128° N, 74.0060° W</td>
-                            <td class="done">Completed</td>
-                        </tr>
-                        <tr>
-                            <td>Point 02</td>
-                            <td>40.7135° N, 74.0072° W</td>
-                            <td class="pending">In Progress</td>
-                        </tr>
-                        <tr>
-                            <td>Point 03</td>
-                            <td>40.7142° N, 74.0085° W</td>
-                            <td class="waiting">Pending</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-        </article>
-
-        <footer class="main-footer">
-            <h2>System Logs</h2>
-            <p>Access full CSV data logs <a href="#">here</a></p>
-        </footer>
-    </main>
     
+<body>
+<header>
+  <h1>Autonomous Water Robot</h1>
+  <div class="status">
+    <div class="status-dot"></div>
+    <span id="status-txt">Live!!!!!</span>
+  </div>
+</header>
+
+<div class="page">
+
+  <div class="map-wrap">
+    <img id="lake-img" src="WTlakeMap.png" alt="Lake Map"
+         onerror="this.style.display='none'; document.getElementById('map-fallback').style.display='flex'">
+    <div class="map-fallback" id="map-fallback">WTlakeMap.png not found</div>
+    <svg id="map-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+  <div class="sidebar">
+    <div id="warn-banner">⚠ Low battery — returning to dock</div>
+    <div class="card">
+      <div class="card-label">Water Temperature</div>
+      <div class="card-value" id="temp-val">--</div>
+      <div class="card-unit">°C</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Battery</div>
+      <div class="card-value" id="batt-val">--</div>
+      <div class="card-unit">volts</div>
+      <div class="batt-bar-bg"><div id="batt-bar"></div></div>
+    </div>
+    <div class="card" style="flex:1; overflow-y:auto;">
+      <div class="card-label">Waypoints</div>
+      <div id="wp-list"></div>
+    </div>
+    <div id="last-updated">Last updated: --</div>
+  </div>
+</div>
+
+<script>
+var SCRIPT_ID = "AKfycbygS7II7UFvHoIcdm-8o7z7u-KVOnVId6_Na9YuvawoER9t9o3_9IIfrJJCsoEkKxjKRQ";
+var SHEET_URL = `https://script.google.com/macros/s/${SCRIPT_ID}/exec?action=read`;
+
+var BATT_MAX    = 13.2;
+var BATT_MIN    = 10.5;
+var BATT_RETURN = 10.8;
+
+var WAYPOINTS = [
+  { id:"WP-00", name:"Dock",        x:50, y:85, lat:0,          lng:0           },
+  { id:"WP-01", name:"Waypoint 01", x:50, y:72, lat:39.950458,  lng:-75.543556  },
+  { id:"WP-02", name:"Waypoint 02", x:40, y:75, lat:39.950139,  lng:-75.544589  },
+  { id:"WP-03", name:"Waypoint 03", x:32, y:70, lat:39.950672,  lng:-75.545383  },
+  { id:"WP-04", name:"Waypoint 04", x:42, y:62, lat:39.951317,  lng:-75.544239  },
+  { id:"WP-05", name:"Waypoint 05", x:52, y:52, lat:39.952097,  lng:-75.543236  },
+  { id:"WP-06", name:"Waypoint 06", x:60, y:40, lat:39.952956,  lng:-75.542319  },
+  { id:"WP-07", name:"Waypoint 07", x:70, y:30, lat:39.953153,  lng:-75.541361  },
+  { id:"WP-08", name:"Waypoint 08", x:65, y:35, lat:39.952875,  lng:-75.541872  },
+  { id:"WP-09", name:"Waypoint 09", x:58, y:42, lat:39.952289,  lng:-75.542106  },
+  { id:"WP-10", name:"Waypoint 10", x:53, y:50, lat:39.951956,  lng:-75.542756  },
+  { id:"WP-11", name:"Waypoint 11", x:45, y:60, lat:39.951242,  lng:-75.543469  },
+  { id:"WP-12", name:"Waypoint 12", x:38, y:68, lat:39.950625,  lng:-75.544292  },
+];
+
+function renderWaypoints(activeWP) {
+  var list = document.getElementById("wp-list");
+  list.innerHTML = WAYPOINTS.map((wp, i) => {
+    let s = i === 0 ? "home" : i < activeWP ? "done" : i === activeWP ? "active" : "pending";
+    var labels = { done:"Done", active:"Active", pending:"Pending", home:"Dock" };
+    return `<div class="wp-item">
+      <div class="wp-dot ${s}"></div>
+      <div class="wp-name">${wp.name}</div>
+      <span class="wp-tag ${s}">${labels[s]}</span>
+    </div>`;
+  }).join("");
+}
+
+function renderMap(activeWP) {
+  var svg = document.getElementById("map-svg");
+  svg.innerHTML = "";
+
+  // Dashed path between waypoints
+  for (let i = 0; i < WAYPOINTS.length - 1; i++) {
+    var a = WAYPOINTS[i], b = WAYPOINTS[i+1];
+    var line = document.createElementNS("http://www.w3.org/2000/svg","line");
+    line.setAttribute("x1", a.x+"%"); line.setAttribute("y1", a.y+"%");
+    line.setAttribute("x2", b.x+"%"); line.setAttribute("y2", b.y+"%");
+    line.setAttribute("stroke", "rgba(100,116,139,0.3)");
+    line.setAttribute("stroke-width","1.5");
+    line.setAttribute("stroke-dasharray","4,4");
+    svg.appendChild(line);
+  }
+
+  // Waypoint dots
+  WAYPOINTS.forEach((wp, i) => {
+    let color = i === 0 ? "#f59e0b" : i < activeWP ? "#22c55e" : i === activeWP ? "#3b82f6" : "#cbd5e1";
+    var c = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("cx", wp.x+"%"); c.setAttribute("cy", wp.y+"%");
+    c.setAttribute("r", i === 0 ? "7" : "5");
+    c.setAttribute("fill", color);
+    c.setAttribute("stroke","white");
+    c.setAttribute("stroke-width","2");
+    svg.appendChild(c);
+
+    var t = document.createElementNS("http://www.w3.org/2000/svg","text");
+    t.setAttribute("x", wp.x+"%");
+    t.setAttribute("y", (wp.y - 3.5)+"%");
+    t.setAttribute("text-anchor","middle");
+    t.setAttribute("fill","#334155");
+    t.setAttribute("font-size","9");
+    t.setAttribute("font-family","Inter,sans-serif");
+    t.setAttribute("font-weight","600");
+    t.textContent = wp.id;
+    svg.appendChild(t);
+  });
+
+  var boat = WAYPOINTS[activeWP] || WAYPOINTS[0];
+
+  var ping = document.createElementNS("http://www.w3.org/2000/svg","circle");
+  ping.setAttribute("cx", boat.x+"%"); ping.setAttribute("cy", boat.y+"%");
+  ping.setAttribute("r","6"); ping.setAttribute("fill","none");
+  ping.setAttribute("stroke","#3b82f6"); ping.setAttribute("stroke-width","1.5");
+  ping.innerHTML = `<animate attributeName="r" from="6" to="18" dur="1.5s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" from="0.7" to="0" dur="1.5s" repeatCount="indefinite"/>`;
+
+  var dot = document.createElementNS("http://www.w3.org/2000/svg","circle");
+  dot.setAttribute("cx", boat.x+"%"); dot.setAttribute("cy", boat.y+"%");
+  dot.setAttribute("r","6"); dot.setAttribute("fill","#3b82f6");
+  dot.setAttribute("stroke","white"); dot.setAttribute("stroke-width","2");
+
+  var label = document.createElementNS("http://www.w3.org/2000/svg","text");
+  label.setAttribute("x", (boat.x+3)+"%"); label.setAttribute("y", (boat.y-3)+"%");
+  label.setAttribute("fill","#1e40af"); label.setAttribute("font-size","10");
+  label.setAttribute("font-family","Inter,sans-serif"); label.setAttribute("font-weight","600");
+  label.textContent = "AWR";
+
+  svg.appendChild(ping); svg.appendChild(dot); svg.appendChild(label);
+}
+
+async function fetchData() {
+  try {
+    var res  = await fetch(SHEET_URL);
+    var rows = await res.json();
+    if (!rows || rows.length === 0) return;
+
+    var latest = rows[rows.length - 1];
+    var temp   = parseFloat(latest[1]);
+    var batt   = parseFloat(latest[4]);
+    var wp     = parseInt(latest[5]) || 0;
+
+    document.getElementById("temp-val").textContent = isNaN(temp) ? "--" : temp.toFixed(1);
+    document.getElementById("batt-val").textContent = isNaN(batt) ? "--" : batt.toFixed(1);
+
+    var pct = Math.max(0, Math.min(100, ((batt - BATT_MIN) / (BATT_MAX - BATT_MIN)) * 100));
+    var bar = document.getElementById("batt-bar");
+    bar.style.width = pct + "%";
+    bar.style.background = batt < BATT_RETURN ? "#ef4444" : batt < 11.5 ? "#f59e0b" : "#22c55e";
+
+    document.getElementById("warn-banner").style.display = batt < BATT_RETURN ? "block" : "none";
+    document.getElementById("last-updated").textContent = "Last updated: " + new Date().toLocaleTimeString();
+
+    renderWaypoints(wp);
+    renderMap(wp);
+
+  } catch(e) {
+    document.getElementById("status-txt").textContent = "Offline";
+    document.getElementById("status-txt").style.color = "#ef4444";
+    document.querySelector(".status-dot").style.background = "#ef4444";
+  }
+}
+renderWaypoints(3);
+renderMap(3);
+fetchData();
+setInterval(fetchData, 10000);
+</script>
 </body>
 </html>
