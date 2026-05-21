@@ -26,7 +26,7 @@
     <svg id="map-svg" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
   <div class="sidebar">
-    <div id="warn-banner">⚠ Low battery — returning to dock</div>
+    <div id="warn-banner">⚠ Low battery(returning to dock!!!)</div>
     <div class="card">
       <div class="card-label">Water Temperature</div>
       <div class="card-value" id="temp-val">--</div>
@@ -35,7 +35,7 @@
     <div class="card">
       <div class="card-label">Battery</div>
       <div class="card-value" id="batt-val">--</div>
-      <div class="card-unit">volts</div>
+      <div class="card-unit">Volts</div>
       <div class="batt-bar-bg"><div id="batt-bar"></div></div>
     </div>
     <div class="card" style="flex:1; overflow-y:auto;">
@@ -54,20 +54,50 @@ var BATT_MAX    = 13.2;
 var BATT_MIN    = 10.5;
 var BATT_RETURN = 10.8;
 
+var GEO_TL = [39.950792, -75.547125];
+var GEO_TR = [39.954372, -75.540706];
+var GEO_BR = [39.952569, -75.539439];
+var GEO_BL = [39.948800, -75.545314];
+var PX_TL = [0,   0  ];
+var PX_TR = [100, 0  ];
+var PX_BR = [100, 100];
+var PX_BL = [0,   100];
+function latLngToXY(lat, lng) {
+  var tl = GEO_TL, tr = GEO_TR, br = GEO_BR, bl = GEO_BL;
+  var s = 0.5, t = 0.5;
+  for (var i = 0; i < 20; i++) {
+    var la = tl[0]*(1-s)*(1-t) + tr[0]*s*(1-t) + br[0]*s*t + bl[0]*(1-s)*t;
+    var lo = tl[1]*(1-s)*(1-t) + tr[1]*s*(1-t) + br[1]*s*t + bl[1]*(1-s)*t;
+    var dla_ds = -tl[0]*(1-t) + tr[0]*(1-t) + br[0]*t - bl[0]*t;
+    var dla_dt = -tl[0]*(1-s) - tr[0]*s    + br[0]*s  + bl[0]*(1-s);
+    var dlo_ds = -tl[1]*(1-t) + tr[1]*(1-t) + br[1]*t - bl[1]*t;
+    var dlo_dt = -tl[1]*(1-s) - tr[1]*s    + br[1]*s  + bl[1]*(1-s);
+    var det = dla_ds*dlo_dt - dla_dt*dlo_ds;
+    if (Math.abs(det) < 1e-15) break;
+    s -= ( dlo_dt*(la-lat) - dla_dt*(lo-lng)) / det;
+    t -= (-dlo_ds*(la-lat) + dla_ds*(lo-lng)) / det;
+    s = Math.max(0, Math.min(1, s));
+    t = Math.max(0, Math.min(1, t));
+  }
+  var x = PX_TL[0]*(1-s)*(1-t) + PX_TR[0]*s*(1-t) + PX_BR[0]*s*t + PX_BL[0]*(1-s)*t;
+  var y = PX_TL[1]*(1-s)*(1-t) + PX_TR[1]*s*(1-t) + PX_BR[1]*s*t + PX_BL[1]*(1-s)*t;
+  return { x: x, y: y };
+}
+
 var WAYPOINTS = [
-  { id:"WP-00", name:"Dock",        x:50, y:85, lat:0,          lng:0           },
-  { id:"WP-01", name:"Waypoint 01", x:50, y:72, lat:39.950458,  lng:-75.543556  },
-  { id:"WP-02", name:"Waypoint 02", x:40, y:75, lat:39.950139,  lng:-75.544589  },
-  { id:"WP-03", name:"Waypoint 03", x:32, y:70, lat:39.950672,  lng:-75.545383  },
-  { id:"WP-04", name:"Waypoint 04", x:42, y:62, lat:39.951317,  lng:-75.544239  },
-  { id:"WP-05", name:"Waypoint 05", x:52, y:52, lat:39.952097,  lng:-75.543236  },
-  { id:"WP-06", name:"Waypoint 06", x:60, y:40, lat:39.952956,  lng:-75.542319  },
-  { id:"WP-07", name:"Waypoint 07", x:70, y:30, lat:39.953153,  lng:-75.541361  },
-  { id:"WP-08", name:"Waypoint 08", x:65, y:35, lat:39.952875,  lng:-75.541872  },
-  { id:"WP-09", name:"Waypoint 09", x:58, y:42, lat:39.952289,  lng:-75.542106  },
-  { id:"WP-10", name:"Waypoint 10", x:53, y:50, lat:39.951956,  lng:-75.542756  },
-  { id:"WP-11", name:"Waypoint 11", x:45, y:60, lat:39.951242,  lng:-75.543469  },
-  { id:"WP-12", name:"Waypoint 12", x:38, y:68, lat:39.950625,  lng:-75.544292  },
+  { id:"WP-00", name:"Dock",        lat:39.951211,  lng:-75.542681 },
+  { id:"WP-01", name:"Waypoint 01", lat:39.950458,  lng:-75.543556 },
+  { id:"WP-02", name:"Waypoint 02", lat:39.950139,  lng:-75.544589 },
+  { id:"WP-03", name:"Waypoint 03", lat:39.950672,  lng:-75.545383 },
+  { id:"WP-04", name:"Waypoint 04", lat:39.951317,  lng:-75.544239 },
+  { id:"WP-05", name:"Waypoint 05", lat:39.952097,  lng:-75.543236 },
+  { id:"WP-06", name:"Waypoint 06", lat:39.952956,  lng:-75.542319 },
+  { id:"WP-07", name:"Waypoint 07", lat:39.953153,  lng:-75.541361 },
+  { id:"WP-08", name:"Waypoint 08", lat:39.952875,  lng:-75.541872 },
+  { id:"WP-09", name:"Waypoint 09", lat:39.952289,  lng:-75.542106 },
+  { id:"WP-10", name:"Waypoint 10", lat:39.951956,  lng:-75.542756 },
+  { id:"WP-11", name:"Waypoint 11", lat:39.951242,  lng:-75.543469 },
+  { id:"WP-12", name:"Waypoint 12", lat:39.950625,  lng:-75.544292 },
 ];
 
 function renderWaypoints(activeWP) {
@@ -87,9 +117,9 @@ function renderMap(activeWP) {
   var svg = document.getElementById("map-svg");
   svg.innerHTML = "";
 
-  // Dashed path between waypoints
   for (let i = 0; i < WAYPOINTS.length - 1; i++) {
-    var a = WAYPOINTS[i], b = WAYPOINTS[i+1];
+    var a = latLngToXY(WAYPOINTS[i].lat, WAYPOINTS[i].lng);
+    var b = latLngToXY(WAYPOINTS[i+1].lat, WAYPOINTS[i+1].lng);
     var line = document.createElementNS("http://www.w3.org/2000/svg","line");
     line.setAttribute("x1", a.x+"%"); line.setAttribute("y1", a.y+"%");
     line.setAttribute("x2", b.x+"%"); line.setAttribute("y2", b.y+"%");
@@ -98,12 +128,11 @@ function renderMap(activeWP) {
     line.setAttribute("stroke-dasharray","4,4");
     svg.appendChild(line);
   }
-
-  // Waypoint dots
   WAYPOINTS.forEach((wp, i) => {
+    var {x, y} = latLngToXY(wp.lat, wp.lng);
     let color = i === 0 ? "#f59e0b" : i < activeWP ? "#22c55e" : i === activeWP ? "#3b82f6" : "#cbd5e1";
     var c = document.createElementNS("http://www.w3.org/2000/svg","circle");
-    c.setAttribute("cx", wp.x+"%"); c.setAttribute("cy", wp.y+"%");
+    c.setAttribute("cx", x+"%"); c.setAttribute("cy", y+"%");
     c.setAttribute("r", i === 0 ? "7" : "5");
     c.setAttribute("fill", color);
     c.setAttribute("stroke","white");
@@ -111,8 +140,8 @@ function renderMap(activeWP) {
     svg.appendChild(c);
 
     var t = document.createElementNS("http://www.w3.org/2000/svg","text");
-    t.setAttribute("x", wp.x+"%");
-    t.setAttribute("y", (wp.y - 3.5)+"%");
+    t.setAttribute("x", x+"%");
+    t.setAttribute("y", (y - 3.5)+"%");
     t.setAttribute("text-anchor","middle");
     t.setAttribute("fill","#334155");
     t.setAttribute("font-size","9");
@@ -122,7 +151,8 @@ function renderMap(activeWP) {
     svg.appendChild(t);
   });
 
-  var boat = WAYPOINTS[activeWP] || WAYPOINTS[0];
+  var boatWP = WAYPOINTS[activeWP] || WAYPOINTS[0];
+  var boat = latLngToXY(boatWP.lat, boatWP.lng);
 
   var ping = document.createElementNS("http://www.w3.org/2000/svg","circle");
   ping.setAttribute("cx", boat.x+"%"); ping.setAttribute("cy", boat.y+"%");
@@ -176,6 +206,7 @@ async function fetchData() {
     document.querySelector(".status-dot").style.background = "#ef4444";
   }
 }
+
 renderWaypoints(3);
 renderMap(3);
 fetchData();
